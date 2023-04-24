@@ -17,11 +17,30 @@
 
     # Add tasks to install Starship, Vim, Tmux, etc.
     
-    - name: Install Starship
-      shell: curl -fsSL https://starship.rs/install.sh | bash -s -- -y
-      args:
-        creates: /usr/local/bin/starship
+    - name: Install Starship and Nerd Fonts
+      block:
+        - name: Clone Nerd Fonts repository
+          git:
+            repo: https://github.com/ryanoasis/nerd-fonts.git
+            dest: /tmp/nerd-fonts
+            version: master
 
+        - name: Install Nerd Fonts
+          shell: |
+            cd /tmp/nerd-fonts
+            ./install.sh FiraCode
+
+        - name: Install Starship
+          shell: curl -fsSL https://starship.rs/install.sh | bash -s -- --yes
+          args:
+            creates: /usr/local/bin/starship
+      
+      rescue:
+        - name: Remove Nerd Fonts directory
+          file:
+            path: /tmp/nerd-fonts
+            state: absent
+ 
     # Add tasks to configure for different shells.
 
     - name: Configure Starship for Bash
