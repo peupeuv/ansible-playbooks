@@ -16,7 +16,7 @@
         - git
 
     # Add tasks to install Starship, Vim, Tmux, etc.
-    
+
     - name: Install Starship and Nerd Fonts
       block:
         - name: Clone Nerd Fonts repository
