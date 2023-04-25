@@ -80,11 +80,11 @@
       
     # Deploy dotfiles
 
-    #- name: Deploy Starship configuration
-    #  copy:
-    #    src: "{{ ansible_env.HOME }}/dotfiles/starship.toml"
-    #    dest: "{{ ansible_env.HOME }}/.config/starship.toml"
-    #    remote_src: yes
+    - name: Deploy Starship configuration
+      copy:
+        src: "{{ ansible_env.HOME }}/dotfiles/starship.toml"
+        dest: "{{ ansible_env.HOME }}/.config/starship.toml"
+        remote_src: yes
 
     #- name: Deploy Vim configuration
     #  copy:
