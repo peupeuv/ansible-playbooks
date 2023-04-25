@@ -19,22 +19,25 @@
 
     - name: Install Starship and Nerd Fonts
       block:
-        - name: Clone FiraCode repository
-          git:
-            repo: https://github.com/tonsky/FiraCode.git
-            dest: /tmp/firacode
+        #- name: Clone FiraCode repository
+        #  git:
+        #    repo: https://github.com/tonsky/FiraCode.git
+        #    dest: /tmp/firacode
 
-        - name: Copy FiraCode font files to ~/.local/share/fonts
-          copy:
-            src: /tmp/firacode/distr/ttf/
-            dest: ~/.local/share/fonts/FiraCode/
-            mode: 0644
+        #- name: Copy FiraCode font files to ~/.local/share/fonts
+        #  copy:
+        #    src: /tmp/firacode/distr/ttf/
+        #    dest: ~/.local/share/fonts/FiraCode/
+        #    mode: 0644
+
+        - name: Install JetBrainMono
+          shell: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)"
 
         - name: Update font cache
           shell: fc-cache -fv
 
         - name: Install Starship
-          shell: curl -fsSL https://starship.rs/install.sh | bash -s -- --yes
+          shell: curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
           args:
             creates: /usr/local/bin/starship
       
