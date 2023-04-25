@@ -1,0 +1,89 @@
+
+- name: Deploy starship prompt to remote platforms
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  # Install dependencies.
+
+  tasks:
+    - name: Install required packages
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - curl
+        - git
+
+    - name: Install Nerd Fonts and Starship
+      block:
+        #- name: Clone FiraCode repository
+        #  git:
+        #    repo: https://github.com/tonsky/FiraCode.git
+        #    dest: /tmp/firacode
+
+        #- name: Copy FiraCode font files to ~/.local/share/fonts
+        #  copy:
+        #    src: /tmp/firacode/distr/ttf/
+        #    dest: ~/.local/share/fonts/FiraCode/
+        #    mode: 0644
+
+        - name: Install JetBrainMono
+          shell: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)"
+
+        - name: Update font cache
+          shell: fc-cache -fv
+
+        - name: Install Starship
+          shell: curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
+          args:
+            creates: /usr/local/bin/starship
+      
+      rescue:
+        - name: Remove Nerd Fonts directory
+          file:
+            path: /tmp/nerd-fonts
+            state: absent
+ 
+    # Add tasks to configure for different shells.
+
+    - name: Configure Starship for Bash
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.bashrc"
+        line: 'eval "$(starship init bash)"'
+        insertafter: EOF
+        create: yes
+
+    #- name: Configure Starship for Zsh
+    #  hosts: zsh_hosts
+    #  gather_facts: yes
+    #  become: yes
+
+    #  tasks:
+    #    - name: Configure Starship
+    #      lineinfile:
+    #        path: "{{ ansible_env.HOME }}/.zshrc"
+    #        line: 'eval "$(starship init zsh)"'
+    #        insertafter: EOF
+    #        create: yes
+      
+    # Clone dotfiles 
+
+    #- name: Clone dotfiles repository from GitHub
+    #  git:
+    #    repo: "https://github.com/peupeuv/dotfiles.git"
+    #    dest: "{{ ansible_env.HOME }}/dotfiles"
+    #    force: yes
+    #    update: yes
+      
+    # Deploy dotfiles
+
+    - name: Deploy Starship configuration
+      copy:
+        src: "{{ ansible_env.HOME }}/dotfiles/starship.toml"
+        dest: "{{ ansible_env.HOME }}/.config/starship.toml"
+        remote_src: yes
+
+    # Add tasks to deploy other configuration files
+
+# Add the shell-specific tasks as described in the previous examples
