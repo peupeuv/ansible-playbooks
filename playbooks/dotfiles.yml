@@ -44,30 +44,24 @@
     # Add tasks to configure for different shells.
 
     - name: Configure Starship for Bash
-      hosts: bash_hosts
-      gather_facts: yes
-      become: yes
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.bashrc"
+        line: 'eval "$(starship init bash)"'
+        insertafter: EOF
+        create: yes
 
-      tasks:
-        - name: Configure Starship
-          lineinfile:
-            path: "{{ ansible_env.HOME }}/.bashrc"
-            line: 'eval "$(starship init bash)"'
-            insertafter: EOF
-            create: yes
+    #- name: Configure Starship for Zsh
+    #  hosts: zsh_hosts
+    #  gather_facts: yes
+    #  become: yes
 
-    - name: Configure Starship for Zsh
-      hosts: zsh_hosts
-      gather_facts: yes
-      become: yes
-
-      tasks:
-        - name: Configure Starship
-          lineinfile:
-            path: "{{ ansible_env.HOME }}/.zshrc"
-            line: 'eval "$(starship init zsh)"'
-            insertafter: EOF
-            create: yes
+    #  tasks:
+    #    - name: Configure Starship
+    #      lineinfile:
+    #        path: "{{ ansible_env.HOME }}/.zshrc"
+    #        line: 'eval "$(starship init zsh)"'
+    #        insertafter: EOF
+    #        create: yes
       
     # Clone dotfiles 
 
@@ -86,17 +80,17 @@
         dest: "{{ ansible_env.HOME }}/.config/starship.toml"
         remote_src: yes
 
-    - name: Deploy Vim configuration
-      copy:
-        src: "{{ ansible_env.HOME }}/dotfiles/vim/.vimrc"
-        dest: "{{ ansible_env.HOME }}/.vimrc"
-        remote_src: yes
+    #- name: Deploy Vim configuration
+    #  copy:
+    #    src: "{{ ansible_env.HOME }}/dotfiles/vim/.vimrc"
+    #    dest: "{{ ansible_env.HOME }}/.vimrc"
+    #    remote_src: yes
 
-    - name: Deploy Tmux configuration
-      copy:
-        src: "{{ ansible_env.HOME }}/dotfiles/tmux/.tmux.conf"
-        dest: "{{ ansible_env.HOME }}/.tmux.conf"
-        remote_src: yes
+    #- name: Deploy Tmux configuration
+    #  copy:
+    #    src: "{{ ansible_env.HOME }}/dotfiles/tmux/.tmux.conf"
+    #    dest: "{{ ansible_env.HOME }}/.tmux.conf"
+    #    remote_src: yes
 
     # Add tasks to deploy other configuration files
 
