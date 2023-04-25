@@ -19,16 +19,19 @@
 
     - name: Install Starship and Nerd Fonts
       block:
-        - name: Clone Nerd Fonts repository
+        - name: Clone FiraCode repository
           git:
-            repo: https://github.com/ryanoasis/nerd-fonts.git
-            dest: /tmp/nerd-fonts
-            version: master
+            repo: https://github.com/tonsky/FiraCode.git
+            dest: /tmp/firacode
 
-        - name: Install Nerd Fonts
-          shell: |
-            cd /tmp/nerd-fonts
-            ./install.sh FiraCode
+        - name: Copy FiraCode font files to ~/.local/share/fonts
+          copy:
+            src: /tmp/firacode/distr/ttf/
+            dest: ~/.local/share/fonts/FiraCode/
+            mode: 0644
+
+        - name: Update font cache
+          shell: fc-cache -fv
 
         - name: Install Starship
           shell: curl -fsSL https://starship.rs/install.sh | bash -s -- --yes
@@ -65,20 +68,20 @@
       
     # Clone dotfiles 
 
-    - name: Clone dotfiles repository from GitHub
-      git:
-        repo: "https://github.com/peupeuv/dotfiles.git"
-        dest: "{{ ansible_env.HOME }}/dotfiles"
-        force: yes
-        update: yes
+    #- name: Clone dotfiles repository from GitHub
+    #  git:
+    #    repo: "https://github.com/peupeuv/dotfiles.git"
+    #    dest: "{{ ansible_env.HOME }}/dotfiles"
+    #    force: yes
+    #    update: yes
       
     # Deploy dotfiles
 
-    - name: Deploy Starship configuration
-      copy:
-        src: "{{ ansible_env.HOME }}/dotfiles/starship.toml"
-        dest: "{{ ansible_env.HOME }}/.config/starship.toml"
-        remote_src: yes
+    #- name: Deploy Starship configuration
+    #  copy:
+    #    src: "{{ ansible_env.HOME }}/dotfiles/starship.toml"
+    #    dest: "{{ ansible_env.HOME }}/.config/starship.toml"
+    #    remote_src: yes
 
     #- name: Deploy Vim configuration
     #  copy:
