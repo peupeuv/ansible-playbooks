@@ -1,0 +1,46 @@
+- name: Generate Let's Encrypt SSL certificate
+  hosts: web_servers
+  become: true
+  vars:
+    domain: example.com
+    email: user@example.com
+    acme_challenge_dir: /var/www/html/.well-known/acme-challenge
+    acme_account_key_src: /etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory/{{ domain }}/private_key.json
+  tasks:
+    - name: Install Certbot and required packages
+      yum:
+        name:
+          - certbot
+          - python3-certbot-nginx
+          - python3-acme
+          - python3-josepy
+          - python3-requests
+        state: present
+      become: true
+
+    - name: Generate Let's Encrypt certificate
+      community.general.acme_certificate:
+        account_key_src: "{{ acme_account_key_src }}"
+        domains: "{{ domain }}"
+        email: "{{ email }}"
+        challenge_dir: "{{ acme_challenge_dir }}"
+        webroot: true
+      register: cert_result
+
+    - name: Install Let's Encrypt certificate on Nginx
+      ansible.builtin.copy:
+        src: "{{ cert_result.fullchain_path }}"
+        dest: /etc/pki/tls/private/{{ domain }}.crt
+      become: true
+
+    - name: Install Let's Encrypt private key on Nginx
+      ansible.builtin.copy:
+        src: "{{ cert_result.privkey_path }}"
+        dest: /etc/pki/tls/private/{{ domain }}.key
+      become: true
+
+    - name: Set up cron job to renew certificate
+      ansible.builtin.copy:
+        content: "0 0 1 * * /usr/bin/certbot renew --post-hook 'systemctl reload nginx' > /dev/null 2>&1"
+        dest: /etc/cron.d/renew_letsencrypt
+      become: true
