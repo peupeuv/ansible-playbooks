@@ -4,14 +4,19 @@ Collection of Ansible playbooks and roles for automating server configuration an
 ## Steps
 
 To deploy the dotfiles and configure the tools using Ansible, follow these steps:
-
 1. Install Ansible on your local machine:
 ```
 sudo apt-get update
 sudo apt-get install ansible
 ```
-
 Replace `apt-get` with the appropriate package manager for your operating system.
+
+Or
+
+use pip in your selected Python environment to install the Ansible package of your choice for the current user:
+```
+python3 -m pip install --user ansible
+```
 
 2. Clone the repository to your local machine:
 ```
