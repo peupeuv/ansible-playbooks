@@ -1,0 +1,64 @@
+- hosts: openvpn-server
+  become: true
+  vars:
+    # Définition des variables utilisées dans le playbook
+    openvpn_subnet: 10.8.0.0
+    openvpn_subnet_mask: 255.255.255.0
+    openvpn_client_dns: 8.8.8.8
+    openvpn_server_port: 1194
+  tasks:
+    - name: Install OpenVPN packages
+      # Installation des packages OpenVPN et Easy-RSA via Yum
+      yum:
+        name:
+          - openvpn
+          - easy-rsa
+        state: present
+    - name: Generate OpenVPN server keys
+      # Génération des clés du serveur OpenVPN via Easy-RSA
+      command: ./easyrsa --batch --req-cn=server --dn-mode=org --req-ou=server --req-email=vpn@example.com build-server-full server nopass
+      args:
+        chdir: /usr/share/easy-rsa/3
+      register: keygen_result
+      # Vérification de la version OpenSSL utilisée
+      changed_when: keygen_result.stdout_lines[0] != "Using SSL: openssl OpenSSL 1.0.2k-fips  26 Jan 2017"
+    - name: Create OpenVPN server configuration
+      # Création du fichier de configuration du serveur OpenVPN
+      template:
+        src: templates/openvpn/server.conf.j2
+        dest: /etc/openvpn/server.conf
+      notify: restart openvpn
+    - name: Enable OpenVPN IP forwarding
+      # Activation du forwarding IP via sysctl
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: 1
+        sysctl_file: /etc/sysctl.d/99-openvpn.conf
+        state: present
+      when: ansible_os_family == "RedHat"
+      notify: restart network
+    - name: Enable OpenVPN in firewall
+      # Ajout de la règle de pare-feu pour OpenVPN via firewalld
+      firewalld:
+        service: openvpn
+        permanent: true
+        state: enabled
+        immediate: true
+      when: ansible_os_family == "RedHat"
+    - name: Start OpenVPN service
+      # Démarrage du service OpenVPN via systemd
+      systemd:
+        name: openvpn@server
+        enabled: yes
+        state: started
+  handlers:
+    - name: restart openvpn
+      # Redémarrage du service OpenVPN en cas de modification de la configuration
+      systemd:
+        name: openvpn@server
+        state: restarted
+    - name: restart network
+      # Redémarrage du service network en cas de modification de la configuration sysctl
+      systemd:
+        name: network
+        state: restarted
